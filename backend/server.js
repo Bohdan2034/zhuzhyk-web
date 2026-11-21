@@ -29,7 +29,7 @@ if (count.total === 0) {
 }
 
 // Віддаємо HTML-клієнт
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../frontend/public')));
 
 // API: отримання всіх елементів
 app.get('/items', (req, res) => {
