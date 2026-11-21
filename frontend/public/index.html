@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Жужик — список товарів</title>
+    <title>Жужик — товари</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,8 +13,17 @@
             padding: 20px;
         }
 
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
         button {
-            padding: 12px 20px;
             cursor: pointer;
         }
 
@@ -23,8 +32,8 @@
             cursor: not-allowed;
         }
 
-        #status {
-            margin-top: 15px;
+        .section {
+            margin-top: 25px;
         }
 
         #warning {
@@ -34,6 +43,10 @@
             background: #fff3cd;
             border: 1px solid #ffc107;
             border-radius: 8px;
+        }
+
+        #status, #createStatus {
+            margin-top: 12px;
         }
     </style>
 </head>
@@ -46,23 +59,87 @@
     <div id="warning"></div>
     <ul id="itemsList"></ul>
 
+    <div class="section">
+        <h2>Створити товар</h2>
+
+        <form id="productForm">
+            <input
+                id="productName"
+                placeholder="Назва товару"
+                required
+            >
+
+            <input
+                id="productPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ціна"
+                required
+            >
+
+            <input
+                id="productStock"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Кількість"
+                required
+            >
+
+            <button id="createButton" type="submit">
+                Створити товар
+            </button>
+        </form>
+
+        <p id="createStatus"></p>
+    </div>
+
     <script>
-        const button = document.getElementById('loadItems');
+        const loadButton = document.getElementById('loadItems');
         const list = document.getElementById('itemsList');
         const status = document.getElementById('status');
         const warning = document.getElementById('warning');
+
+        const form = document.getElementById('productForm');
+        const createButton = document.getElementById('createButton');
+        const createStatus = document.getElementById('createStatus');
 
         const sleep = ms =>
             new Promise(resolve => setTimeout(resolve, ms));
 
         let failures = 0;
 
+        function getBackoff(attempt) {
+            const base = 250 * (2 ** attempt);
+            const jitter = Math.floor(Math.random() * 100);
+            return base + jitter;
+        }
+
         async function fetchWithResilience(url, options = {}) {
             const retries = 2;
-            const timeoutMs = 3000;
+            const timeoutMs = 1000;
+
+            const method = (options.method || 'GET').toUpperCase();
+
+            // Один ключ на всі повтори одного POST-запиту
+            const idempotencyKey =
+                method === 'POST'
+                    ? crypto.randomUUID()
+                    : null;
 
             for (let attempt = 0; attempt <= retries; attempt++) {
                 const controller = new AbortController();
+
+                const headers = new Headers(options.headers || {});
+                headers.set('X-Request-Id', crypto.randomUUID());
+
+                if (idempotencyKey) {
+                    headers.set('Idempotency-Key', idempotencyKey);
+                }
+
+                let response;
+                let networkError = null;
 
                 const timer = setTimeout(
                     () => controller.abort(),
@@ -70,79 +147,87 @@
                 );
 
                 try {
-                    const response = await fetch(url, {
+                    response = await fetch(url, {
                         ...options,
-                        signal: controller.signal,
-                        headers: {
-                            ...options.headers,
-                            'X-Request-Id': crypto.randomUUID()
-                        }
+                        method,
+                        headers,
+                        signal: controller.signal
                     });
-
-                    if (response.ok) {
-                        return response;
-                    }
-
-                    const retryable =
-                        response.status === 429 ||
-                        response.status >= 500;
-
-                    if (!retryable || attempt === retries) {
-                        throw new Error(
-                            `HTTP ${response.status}`
-                        );
-                    }
-
-                    let delay;
-
-                    if (response.status === 429) {
-                        const retryAfter = Number(
-                            response.headers.get('Retry-After')
-                        );
-
-                        delay = Number.isFinite(retryAfter) &&
-                            retryAfter >= 0
-                            ? retryAfter * 1000
-                            : 1000;
-                    } else {
-                        delay = 250 * (2 ** attempt) +
-                            Math.floor(Math.random() * 100);
-                    }
-
-                    await sleep(delay);
                 } catch (error) {
-                    if (
-                        attempt === retries ||
-                        /^HTTP \d+$/.test(error.message)
-                    ) {
-                        throw error;
-                    }
-
-                    const delay = 250 * (2 ** attempt) +
-                        Math.floor(Math.random() * 100);
-
-                    await sleep(delay);
+                    networkError = error;
                 } finally {
                     clearTimeout(timer);
                 }
+
+                if (networkError) {
+                    if (attempt === retries) {
+                        throw networkError;
+                    }
+
+                    await sleep(getBackoff(attempt));
+                    continue;
+                }
+
+                if (response.ok) {
+                    return response;
+                }
+
+                const retryable =
+                    response.status === 429 ||
+                    response.status >= 500;
+
+                if (!retryable || attempt === retries) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                let delay = getBackoff(attempt);
+
+                if (response.status === 429) {
+                    const retryAfterHeader =
+                        response.headers.get('Retry-After');
+
+                    if (retryAfterHeader !== null) {
+                        const seconds = Number(retryAfterHeader);
+
+                        if (Number.isFinite(seconds) && seconds >= 0) {
+                            delay = seconds * 1000;
+                        } else {
+                            const retryDate =
+                                Date.parse(retryAfterHeader);
+
+                            if (!Number.isNaN(retryDate)) {
+                                delay = Math.max(
+                                    0,
+                                    retryDate - Date.now()
+                                );
+                            }
+                        }
+                    }
+                }
+
+                await sleep(delay);
             }
         }
 
+        function renderItems(items) {
+            list.replaceChildren();
+
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.id}: ${item.name}`;
+                list.appendChild(li);
+            });
+        }
+
         async function loadItems() {
-            button.disabled = true;
+            loadButton.disabled = true;
             status.textContent = 'Завантаження товарів...';
 
             try {
                 const response = await fetchWithResilience('/items');
                 const items = await response.json();
 
-                list.replaceChildren();
-
-                items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = `${item.id}: ${item.name}`;
-                    list.appendChild(li);
-                });
+                renderItems(items);
 
                 failures = 0;
                 warning.style.display = 'none';
@@ -156,25 +241,57 @@
                 if (failures >= 2) {
                     warning.style.display = 'block';
                     warning.textContent =
-                        '⚠️ Сервер перевантажено або недоступний. ' +
-                        'Спробуйте пізніше.';
-
-                    status.textContent +=
-                        ' Показано останні доступні дані.';
+                        '⚠️ Сервер тимчасово недоступний. ' +
+                        'Показано останні завантажені товари.';
                 }
             } finally {
-                if (failures >= 2) {
-                    status.textContent +=
-                        ' Повторна спроба через 5 секунд.';
-
-                    await sleep(5000);
-                }
-
-                button.disabled = false;
+                loadButton.disabled = false;
             }
         }
 
-        button.addEventListener('click', loadItems);
+        async function createProduct(event) {
+            event.preventDefault();
+
+            const product = {
+                name: document.getElementById('productName').value.trim(),
+                price: Number(
+                    document.getElementById('productPrice').value
+                ),
+                stock: Number(
+                    document.getElementById('productStock').value
+                )
+            };
+
+            createButton.disabled = true;
+            createStatus.textContent = 'Створення товару...';
+
+            try {
+                const response = await fetchWithResilience('/items', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(product)
+                });
+
+                const created = await response.json();
+
+                createStatus.textContent =
+                    `Товар створено! ID: ${created.id}`;
+
+                form.reset();
+
+                await loadItems();
+            } catch (error) {
+                createStatus.textContent =
+                    `Помилка створення: ${error.message}`;
+            } finally {
+                createButton.disabled = false;
+            }
+        }
+
+        loadButton.addEventListener('click', loadItems);
+        form.addEventListener('submit', createProduct);
     </script>
 </body>
 </html>
