@@ -1,0 +1,267 @@
+openapi: 3.0.3
+info:
+  title: Zhuzhyk API
+  version: 0.4.0
+  description: |
+    REST API онлайн-магазину Zhuzhyk. Контекст Catalog: CRUD для товарів (Product).
+    Маршрут `/items` збережено з практичної 1 (див. ADR 0003).
+servers:
+  - url: http://localhost:3000
+    description: Локальний сервер
+tags:
+  - name: Products
+    description: Каталог товарів
+  - name: System
+    description: Службові ендпоінти
+paths:
+  /items:
+    get:
+      tags: [Products]
+      summary: Список товарів
+      operationId: listProducts
+      responses:
+        '200':
+          description: Список товарів
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags: [Products]
+      summary: Створити товар
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+            example:
+              name: Молоко
+              description: Пастеризоване, 2.5%
+              price: 42.5
+              stock: 20
+      responses:
+        '201':
+          description: Товар створено
+          headers:
+            Location:
+              description: URL створеного ресурсу
+              schema:
+                type: string
+                example: /items/4
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /items/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    get:
+      tags: [Products]
+      summary: Деталі товару
+      operationId: getProduct
+      responses:
+        '200':
+          description: Товар
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      tags: [Products]
+      summary: Часткове оновлення товару
+      description: Оновлює лише передані поля. Потрібне хоча б одне поле.
+      operationId: updateProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+            example:
+              price: 45
+              stock: 15
+      responses:
+        '200':
+          description: Оновлений товар
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags: [Products]
+      summary: Видалити товар
+      operationId: deleteProduct
+      responses:
+        '204':
+          description: Товар видалено
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /health:
+    get:
+      tags: [System]
+      summary: Перевірка стану сервісу
+      operationId: health
+      responses:
+        '200':
+          description: Сервіс працює
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: ok
+components:
+  parameters:
+    ProductId:
+      name: id
+      in: path
+      required: true
+      description: Ідентифікатор товару
+      schema:
+        type: integer
+        minimum: 1
+        example: 1
+  schemas:
+    Product:
+      type: object
+      required: [id, name, description, price, stock]
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Молоко
+        description:
+          type: string
+          example: Пастеризоване, 2.5%
+        price:
+          type: number
+          minimum: 0
+          example: 42.5
+        stock:
+          type: integer
+          minimum: 0
+          example: 20
+    CreateProductRequest:
+      type: object
+      required: [name, price]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+          default: ''
+        price:
+          type: number
+          minimum: 0
+        stock:
+          type: integer
+          minimum: 0
+          default: 0
+    UpdateProductRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        price:
+          type: number
+          minimum: 0
+        stock:
+          type: integer
+          minimum: 0
+    ErrorDetail:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          example: name
+        message:
+          type: string
+          example: Назва обов’язкова
+    ErrorResponse:
+      type: object
+      required: [error, code]
+      properties:
+        error:
+          type: string
+          description: Категорія помилки
+          enum: [ValidationError, NotFound, BadRequest, InternalError]
+          example: ValidationError
+        code:
+          type: string
+          description: Стабільний машинозчитуваний код
+          example: VALIDATION_FAILED
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+  responses:
+    BadRequest:
+      description: Невалідний запит (тіло, id або JSON)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: ValidationError
+            code: VALIDATION_FAILED
+            details:
+              - field: name
+                message: Назва обов’язкова
+    NotFound:
+      description: Ресурс не знайдено
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: NotFound
+            code: PRODUCT_NOT_FOUND
+            details:
+              - field: id
+                message: Ресурс з ID 99 не знайдено
+    InternalError:
+      description: Внутрішня помилка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: InternalError
+            code: INTERNAL_ERROR
