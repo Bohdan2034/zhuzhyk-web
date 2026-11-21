@@ -1,0 +1,19 @@
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: zhuzhyk-app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_PATH: /app/data/items.db
+    volumes:
+      - zhuzhyk-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  zhuzhyk-data:
