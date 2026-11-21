@@ -4,39 +4,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Список елементів</title>
+    <title>Жужик — список товарів</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 15px;
+        }
+
+        #warning {
+            display: none;
+            padding: 15px;
+            margin-top: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-<h1>Список елементів</h1>
+    <h1>🐝 Жужик — список товарів</h1>
 
-<button id="loadItems">Завантажити елементи</button>
+    <button id="loadItems">Завантажити товари</button>
 
-<ul id="itemsList"></ul>
+    <p id="status"></p>
+    <div id="warning"></div>
+    <ul id="itemsList"></ul>
 
-<script>
-    const button = document.getElementById('loadItems');
-    const list = document.getElementById('itemsList');
+    <script>
+        const button = document.getElementById('loadItems');
+        const list = document.getElementById('itemsList');
+        const status = document.getElementById('status');
+        const warning = document.getElementById('warning');
 
-    button.addEventListener('click', async () => {
-        try {
-            const response = await fetch('/items');
+        const sleep = ms =>
+            new Promise(resolve => setTimeout(resolve, ms));
 
-            if (!response.ok) {
-                throw new Error('Не вдалося завантажити елементи');
+        let failures = 0;
+
+        async function fetchWithResilience(url, options = {}) {
+            const retries = 2;
+            const timeoutMs = 3000;
+
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                const controller = new AbortController();
+
+                const timer = setTimeout(
+                    () => controller.abort(),
+                    timeoutMs
+                );
+
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: controller.signal,
+                        headers: {
+                            ...options.headers,
+                            'X-Request-Id': crypto.randomUUID()
+                        }
+                    });
+
+                    if (response.ok) {
+                        return response;
+                    }
+
+                    const retryable =
+                        response.status === 429 ||
+                        response.status >= 500;
+
+                    if (!retryable || attempt === retries) {
+                        throw new Error(
+                            `HTTP ${response.status}`
+                        );
+                    }
+
+                    let delay;
+
+                    if (response.status === 429) {
+                        const retryAfter = Number(
+                            response.headers.get('Retry-After')
+                        );
+
+                        delay = Number.isFinite(retryAfter) &&
+                            retryAfter >= 0
+                            ? retryAfter * 1000
+                            : 1000;
+                    } else {
+                        delay = 250 * (2 ** attempt) +
+                            Math.floor(Math.random() * 100);
+                    }
+
+                    await sleep(delay);
+                } catch (error) {
+                    if (
+                        attempt === retries ||
+                        /^HTTP \d+$/.test(error.message)
+                    ) {
+                        throw error;
+                    }
+
+                    const delay = 250 * (2 ** attempt) +
+                        Math.floor(Math.random() * 100);
+
+                    await sleep(delay);
+                } finally {
+                    clearTimeout(timer);
+                }
             }
-
-            const items = await response.json();
-            list.replaceChildren();
-
-            items.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = `${item.id}: ${item.name}`;
-                list.appendChild(li);
-            });
-        } catch (error) {
-            list.textContent = error.message;
         }
-    });
-</script>
+
+        async function loadItems() {
+            button.disabled = true;
+            status.textContent = 'Завантаження товарів...';
+
+            try {
+                const response = await fetchWithResilience('/items');
+                const items = await response.json();
+
+                list.replaceChildren();
+
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.id}: ${item.name}`;
+                    list.appendChild(li);
+                });
+
+                failures = 0;
+                warning.style.display = 'none';
+                status.textContent = 'Товари завантажено успішно!';
+            } catch (error) {
+                failures++;
+
+                status.textContent =
+                    `Помилка завантаження: ${error.message}`;
+
+                if (failures >= 2) {
+                    warning.style.display = 'block';
+                    warning.textContent =
+                        '⚠️ Сервер перевантажено або недоступний. ' +
+                        'Спробуйте пізніше.';
+
+                    status.textContent +=
+                        ' Показано останні доступні дані.';
+                }
+            } finally {
+                if (failures >= 2) {
+                    status.textContent +=
+                        ' Повторна спроба через 5 секунд.';
+
+                    await sleep(5000);
+                }
+
+                button.disabled = false;
+            }
+        }
+
+        button.addEventListener('click', loadItems);
+    </script>
 </body>
 </html>
