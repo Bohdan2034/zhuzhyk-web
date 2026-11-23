@@ -255,13 +255,23 @@ function renderItems(items) {
                 ? `В наявності: ${stockCount} шт.`
                 : 'Немає в наявності';
 
+
         const button = document.createElement('button');
         button.className = 'product-button';
         button.type = 'button';
         button.textContent = 'Додати до кошика';
-        button.disabled = true;
-        button.title =
-            'Функцію кошика додамо на наступному етапі';
+
+        button.disabled = Number(item.stock) <= 0;
+
+        button.addEventListener('click', () => {
+            window.addToCart(item);
+            button.textContent = '✓ Додано!';
+
+            setTimeout(() => {
+                button.textContent = 'Додати до кошика';
+            }, 1200);
+        });
+
 
         info.append(
             title,

@@ -8,6 +8,7 @@
     <title>Жужик — головна</title>
 
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/cart.js" defer></script>
     <script src="/js/app.js" defer></script>
 </head>
 <body>
@@ -177,6 +178,26 @@
         <p>© 2026 Жужик. Навчальний вебпроєкт.</p>
     </div>
 </footer>
+
+<div id="cartOverlay" class="cart-overlay" hidden></div>
+
+<aside id="cartPanel" class="cart-panel" aria-label="Кошик покупця" hidden>
+    <div class="cart-header">
+        <h2>🛒 Мій кошик</h2>
+        <button id="closeCart" type="button" aria-label="Закрити кошик">✕</button>
+    </div>
+
+    <div id="cartItems" class="cart-items">
+        <p>Ваш кошик порожній.</p>
+    </div>
+
+    <div class="cart-footer">
+        <p>Разом: <strong id="cartTotal">0 грн</strong></p>
+        <button id="checkoutButton" type="button" disabled>
+            Оформити замовлення
+        </button>
+    </div>
+</aside>
 
 </body>
 </html>

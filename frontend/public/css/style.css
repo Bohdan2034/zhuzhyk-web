@@ -635,3 +635,113 @@ img {
     object-fit: contain;
     border-radius: 10px;
 }
+
+
+/* Кошик покупця */
+
+.cart-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 200;
+}
+
+.cart-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(420px, 100%);
+    height: 100dvh;
+    background: var(--white);
+    z-index: 201;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.2);
+}
+
+.cart-overlay[hidden],
+.cart-panel[hidden] {
+    display: none;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px;
+    background: var(--burgundy-dark);
+    color: var(--white);
+}
+
+.cart-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+#closeCart {
+    border: none;
+    background: transparent;
+    color: var(--white);
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.cart-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.cart-item strong {
+    font-size: 16px;
+}
+
+.cart-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cart-item-controls button {
+    border: 1px solid var(--border);
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-weight: 700;
+}
+
+.cart-item-controls button:hover {
+    background: var(--gold-light);
+}
+
+.cart-footer {
+    padding: 22px;
+    border-top: 1px solid var(--border);
+    background: var(--cream);
+}
+
+.cart-footer p {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+#checkoutButton {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 800;
+}
