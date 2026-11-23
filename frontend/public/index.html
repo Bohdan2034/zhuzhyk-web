@@ -4,294 +4,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Жужик — товари</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 20px;
-        }
+    <meta name="description" content="Жужик — навчальний вебмагазин">
+    <title>Жужик — головна</title>
 
-        input, button {
-            padding: 10px;
-            margin: 5px 0;
-        }
-
-        input {
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        button {
-            cursor: pointer;
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .section {
-            margin-top: 25px;
-        }
-
-        #warning {
-            display: none;
-            padding: 15px;
-            margin-top: 15px;
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-        }
-
-        #status, #createStatus {
-            margin-top: 12px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/app.js" defer></script>
 </head>
 <body>
-    <h1>🐝 Жужик — список товарів</h1>
 
-    <button id="loadItems">Завантажити товари</button>
+<header class="header">
+    <div class="container header-content">
+        <a href="/" class="logo">
+            <img src="/images/logo-main.jpg" alt="Жужик">
+            <span>ЖУЖИК</span>
+        </a>
 
-    <p id="status"></p>
-    <div id="warning"></div>
-    <ul id="itemsList"></ul>
+        <nav class="navigation" aria-label="Головна навігація">
+            <a href="#home">Головна</a>
+            <a href="#catalog">Каталог</a>
+            <a href="#about">Про нас</a>
+        </nav>
 
-    <div class="section">
-        <h2>Створити товар</h2>
-
-        <form id="productForm">
-            <input
-                id="productName"
-                placeholder="Назва товару"
-                required
-            >
-
-            <input
-                id="productPrice"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Ціна"
-                required
-            >
-
-            <input
-                id="productStock"
-                type="number"
-                min="0"
-                step="1"
-                placeholder="Кількість"
-                required
-            >
-
-            <button id="createButton" type="submit">
-                Створити товар
-            </button>
-        </form>
-
-        <p id="createStatus"></p>
+        <button class="cart-button" type="button">
+            🛒 Кошик <span id="cartCount">0</span>
+        </button>
     </div>
+</header>
 
-    <script>
-        const loadButton = document.getElementById('loadItems');
-        const list = document.getElementById('itemsList');
-        const status = document.getElementById('status');
-        const warning = document.getElementById('warning');
+<main>
+    <section class="hero" id="home">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <span class="hero-label">🐝 Вітаємо у Жужику</span>
 
-        const form = document.getElementById('productForm');
-        const createButton = document.getElementById('createButton');
-        const createStatus = document.getElementById('createStatus');
+                <h1>ЖУЖИК — твій простір покупок</h1>
 
-        const sleep = ms =>
-            new Promise(resolve => setTimeout(resolve, ms));
+                <p>
+                    Навчальний інтернет-магазин із
+                    зручним каталогом, сучасним дизайном
+                    та простим керуванням товарами.
+                </p>
 
-        let failures = 0;
+                <a href="#catalog" class="primary-button">
+                    Переглянути каталог
+                </a>
+            </div>
 
-        function getBackoff(attempt) {
-            const base = 250 * (2 ** attempt);
-            const jitter = Math.floor(Math.random() * 100);
-            return base + jitter;
-        }
+            <div class="hero-image">
+                <img src="/images/logo-main.jpg"
+                     alt="Фірмовий логотип Жужик">
+            </div>
+        </div>
+    </section>
 
-        async function fetchWithResilience(url, options = {}) {
-            const retries = 2;
-            const timeoutMs = 1000;
+    <section class="catalog section" id="catalog">
+        <div class="container">
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">Наш асортимент</span>
+                    <h2>Каталог товарів</h2>
+                </div>
 
-            const method = (options.method || 'GET').toUpperCase();
+                <button id="loadItems" type="button">
+                    Оновити товари
+                </button>
+            </div>
 
-            // Один ключ на всі повтори одного POST-запиту
-            const idempotencyKey =
-                method === 'POST'
-                    ? crypto.randomUUID()
-                    : null;
+            <div class="catalog-toolbar">
+                <input
+                        type="search"
+                        id="searchInput"
+                        placeholder="Пошук товарів..."
+                        aria-label="Пошук товарів"
+                >
+            </div>
 
-            for (let attempt = 0; attempt <= retries; attempt++) {
-                const controller = new AbortController();
+            <p id="status" role="status"></p>
+            <div id="warning" role="alert"></div>
 
-                const headers = new Headers(options.headers || {});
-                headers.set('X-Request-Id', crypto.randomUUID());
+            <div id="itemsList" class="products-grid"></div>
+        </div>
+    </section>
 
-                if (idempotencyKey) {
-                    headers.set('Idempotency-Key', idempotencyKey);
-                }
+    <section class="about section" id="about">
+        <div class="container">
+            <h2>Про Жужик</h2>
 
-                let response;
-                let networkError = null;
+            <p>
+                Жужик — навчальний вебпроєкт,
+                створений із використанням
+                HTML, CSS, JavaScript, Node.js,
+                Express та SQLite.
+            </p>
+        </div>
+    </section>
 
-                const timer = setTimeout(
-                    () => controller.abort(),
-                    timeoutMs
-                );
+    <section class="admin section" id="admin">
+        <div class="container">
+            <h2>Керування товарами</h2>
 
-                try {
-                    response = await fetch(url, {
-                        ...options,
-                        method,
-                        headers,
-                        signal: controller.signal
-                    });
-                } catch (error) {
-                    networkError = error;
-                } finally {
-                    clearTimeout(timer);
-                }
+            <p>
+                Тимчасова форма для тестування API.
+                Пізніше вона буде перенесена
+                до захищеної адмінпанелі.
+            </p>
 
-                if (networkError) {
-                    if (attempt === retries) {
-                        throw networkError;
-                    }
+            <form id="productForm" class="product-form">
+                <input
+                        id="productName"
+                        type="text"
+                        placeholder="Назва товару"
+                        required
+                >
 
-                    await sleep(getBackoff(attempt));
-                    continue;
-                }
+                <input
+                        id="productPrice"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Ціна"
+                        required
+                >
 
-                if (response.ok) {
-                    return response;
-                }
+                <input
+                        id="productStock"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Кількість"
+                        required
+                >
 
-                const retryable =
-                    response.status === 429 ||
-                    response.status >= 500;
+                <button id="createButton" type="submit">
+                    Додати товар
+                </button>
+            </form>
 
-                if (!retryable || attempt === retries) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
+            <p id="createStatus" role="status"></p>
+        </div>
+    </section>
+</main>
 
-                let delay = getBackoff(attempt);
+<footer class="footer">
+    <div class="container footer-content">
+        <span>🐝 ЖУЖИК</span>
+        <p>© 2026 Жужик. Навчальний вебпроєкт.</p>
+    </div>
+</footer>
 
-                if (response.status === 429) {
-                    const retryAfterHeader =
-                        response.headers.get('Retry-After');
-
-                    if (retryAfterHeader !== null) {
-                        const seconds = Number(retryAfterHeader);
-
-                        if (Number.isFinite(seconds) && seconds >= 0) {
-                            delay = seconds * 1000;
-                        } else {
-                            const retryDate =
-                                Date.parse(retryAfterHeader);
-
-                            if (!Number.isNaN(retryDate)) {
-                                delay = Math.max(
-                                    0,
-                                    retryDate - Date.now()
-                                );
-                            }
-                        }
-                    }
-                }
-
-                await sleep(delay);
-            }
-        }
-
-        function renderItems(items) {
-            list.replaceChildren();
-
-            items.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = `${item.id}: ${item.name}`;
-                list.appendChild(li);
-            });
-        }
-
-        async function loadItems() {
-            loadButton.disabled = true;
-            status.textContent = 'Завантаження товарів...';
-
-            try {
-                const response = await fetchWithResilience('/items');
-                const items = await response.json();
-
-                renderItems(items);
-
-                failures = 0;
-                warning.style.display = 'none';
-                status.textContent = 'Товари завантажено успішно!';
-            } catch (error) {
-                failures++;
-
-                status.textContent =
-                    `Помилка завантаження: ${error.message}`;
-
-                if (failures >= 2) {
-                    warning.style.display = 'block';
-                    warning.textContent =
-                        '⚠️ Сервер тимчасово недоступний. ' +
-                        'Показано останні завантажені товари.';
-                }
-            } finally {
-                loadButton.disabled = false;
-            }
-        }
-
-        async function createProduct(event) {
-            event.preventDefault();
-
-            const product = {
-                name: document.getElementById('productName').value.trim(),
-                price: Number(
-                    document.getElementById('productPrice').value
-                ),
-                stock: Number(
-                    document.getElementById('productStock').value
-                )
-            };
-
-            createButton.disabled = true;
-            createStatus.textContent = 'Створення товару...';
-
-            try {
-                const response = await fetchWithResilience('/items', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(product)
-                });
-
-                const created = await response.json();
-
-                createStatus.textContent =
-                    `Товар створено! ID: ${created.id}`;
-
-                form.reset();
-
-                await loadItems();
-            } catch (error) {
-                createStatus.textContent =
-                    `Помилка створення: ${error.message}`;
-            } finally {
-                createButton.disabled = false;
-            }
-        }
-
-        loadButton.addEventListener('click', loadItems);
-        form.addEventListener('submit', createProduct);
-    </script>
 </body>
 </html>
