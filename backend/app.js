@@ -7,9 +7,13 @@ const { errorHandler, notFoundHandler } = require('./api/errorHandler');
 
 const requestId = require('./middleware/requestId');
 const rateLimiter = require('./middleware/rateLimiter');
+const { metricsMiddleware, metricsHandler } = require('./middleware/metrics');
 
 function createApp({ productService }) {
     const app = express();
+
+    app.use(metricsMiddleware);
+    app.get('/metrics', metricsHandler);
 
     // Додаємо унікальний ID до кожного HTTP-запиту
     app.use(requestId);
