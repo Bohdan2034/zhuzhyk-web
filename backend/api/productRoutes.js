@@ -11,7 +11,6 @@ function createProductRoutes(productService) {
     function prepareProductData(req) {
         const data = { ...req.body };
 
-        // Multipart передає числові поля як рядки
         if (typeof data.price === 'string') {
             data.price = Number(data.price);
         }
@@ -33,23 +32,23 @@ function createProductRoutes(productService) {
         }
     }
 
-    // Отримання всіх товарів
-    router.get('/', (req, res, next) => {
+    router.get('/', async (req, res, next) => {
         try {
-            res.status(200).json(productService.list());
+            const products = await productService.list();
+
+            return res.status(200).json(products);
         } catch (error) {
             next(error);
         }
     });
 
-    // Створення товару з фотографією
-    router.post('/', upload.single('image'), (req, res, next) => {
+    router.post('/', upload.single('image'), async (req, res, next) => {
         try {
             const data = prepareProductData(req);
             const key = req.get('Idempotency-Key');
 
             if (!key) {
-                const product = productService.create(data);
+                const product = await productService.create(data);
 
                 return res.status(201)
                     .location(`/items/${product.id}`)
@@ -67,7 +66,7 @@ function createProductRoutes(productService) {
                     : null
             };
 
-            const outcome = idempotencyStore.execute(
+            const outcome = await idempotencyStore.execute(
                 key,
                 idempotencyData,
                 () => productService.create(data)
@@ -102,40 +101,37 @@ function createProductRoutes(productService) {
         }
     });
 
-    // Отримання товару за ID
-    router.get('/:id', (req, res, next) => {
+    router.get('/:id', async (req, res, next) => {
         try {
-            res.status(200).json(
-                productService.get(req.params.id)
-            );
+            const product = await productService.get(req.params.id);
+
+            return res.status(200).json(product);
         } catch (error) {
             next(error);
         }
     });
 
-    // Редагування товару та заміна фотографії
-    router.patch('/:id', upload.single('image'), (req, res, next) => {
+    router.patch('/:id', upload.single('image'), async (req, res, next) => {
         try {
             const data = prepareProductData(req);
 
-            const product = productService.update(
+            const product = await productService.update(
                 req.params.id,
                 data
             );
 
             return res.status(200).json(product);
-
         } catch (error) {
             removeUploadedFile(req);
             next(error);
         }
     });
 
-    // Видалення товару
-    router.delete('/:id', (req, res, next) => {
+    router.delete('/:id', async (req, res, next) => {
         try {
-            productService.remove(req.params.id);
-            res.status(204).end();
+            await productService.remove(req.params.id);
+
+            return res.status(204).end();
         } catch (error) {
             next(error);
         }

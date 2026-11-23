@@ -40,13 +40,15 @@ class ProductService {
         this.repository = repository;
     }
 
-    list() {
-        return this.repository.findAll().map(row => toDto(toDomain(row)));
+    async list() {
+        const rows = await this.repository.findAll();
+
+        return rows.map(row => toDto(toDomain(row)));
     }
 
-    get(rawId) {
+    async get(rawId) {
         const id = parseId(rawId);
-        const row = this.repository.findById(id);
+        const row = await this.repository.findById(id);
 
         if (!row) {
             throw new NotFoundError('Product', id);
@@ -55,7 +57,7 @@ class ProductService {
         return toDto(toDomain(row));
     }
 
-    create(dto) {
+    async create(dto) {
         const { values, details } = validateProductInput(
             dto,
             { partial: false }
@@ -74,14 +76,14 @@ class ProductService {
             values.imageUrl ?? null
         );
 
-        return toDto(
-            toDomain(this.repository.insert(toRow(product)))
-        );
+        const saved = await this.repository.insert(toRow(product));
+
+        return toDto(toDomain(saved));
     }
 
-    update(rawId, dto) {
+    async update(rawId, dto) {
         const id = parseId(rawId);
-        const existing = this.repository.findById(id);
+        const existing = await this.repository.findById(id);
 
         if (!existing) {
             throw new NotFoundError('Product', id);
@@ -105,7 +107,7 @@ class ProductService {
             values.imageUrl ?? existing.imageUrl ?? null
         );
 
-        const saved = this.repository.update(id, toRow(merged));
+        const saved = await this.repository.update(id, toRow(merged));
 
         if (!saved) {
             throw new NotFoundError('Product', id);
@@ -114,10 +116,12 @@ class ProductService {
         return toDto(toDomain(saved));
     }
 
-    remove(rawId) {
+    async remove(rawId) {
         const id = parseId(rawId);
 
-        if (!this.repository.delete(id)) {
+        const deleted = await this.repository.delete(id);
+
+        if (!deleted) {
             throw new NotFoundError('Product', id);
         }
     }

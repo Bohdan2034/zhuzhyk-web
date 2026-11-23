@@ -14,7 +14,7 @@ class IdempotencyStore {
             .digest('hex');
     }
 
-    execute(key, data, action) {
+    async execute(key, data, action) {
         const hash = this.getHash(data);
         const existing = this.records.get(key);
 
@@ -28,22 +28,29 @@ class IdempotencyStore {
             return {
                 conflict: false,
                 replayed: true,
-                result: existing.result
+                result: await existing.result
             };
         }
 
-        const result = action();
+        const pending = Promise.resolve().then(action);
 
         this.records.set(key, {
             hash,
-            result
+            result: pending
         });
 
-        return {
-            conflict: false,
-            replayed: false,
-            result
-        };
+        try {
+            const result = await pending;
+
+            return {
+                conflict: false,
+                replayed: false,
+                result
+            };
+        } catch (error) {
+            this.records.delete(key);
+            throw error;
+        }
     }
 }
 

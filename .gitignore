@@ -17,3 +17,6 @@ npm-debug.log*
 
 # Налаштування IDE
 .idea/
+
+# Локальні фотографії товарів
+backend/uploads/products/
