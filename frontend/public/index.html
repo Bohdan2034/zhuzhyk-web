@@ -109,12 +109,20 @@
                 до захищеної адмінпанелі.
             </p>
 
+
             <form id="productForm" class="product-form">
+
                 <input
                         id="productName"
                         type="text"
                         placeholder="Назва товару"
                         required
+                >
+
+                <input
+                        id="productDescription"
+                        type="text"
+                        placeholder="Опис товару"
                 >
 
                 <input
@@ -135,10 +143,28 @@
                         required
                 >
 
+                <div class="image-upload">
+                    <label for="productImage">
+                        📷 Обрати фотографію товару
+                    </label>
+
+                    <input
+                            id="productImage"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                    >
+
+                    <div id="imagePreview" class="image-preview">
+                        <span>Фото з’явиться тут після вибору</span>
+                    </div>
+                </div>
+
                 <button id="createButton" type="submit">
                     Додати товар
                 </button>
+
             </form>
+
 
             <p id="createStatus" role="status"></p>
         </div>

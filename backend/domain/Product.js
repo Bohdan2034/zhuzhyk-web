@@ -1,11 +1,12 @@
 
 class Product {
-    constructor(id, name, description, price, stock) {
+    constructor(id, name, description, price, stock, imageUrl = null) {
         this.id = id;
         this.setName(name);
         this.description = description;
         this.setPrice(price);
         this.setStock(stock);
+        this.setImageUrl(imageUrl);
     }
 
     setName(name) {
@@ -17,8 +18,11 @@ class Product {
     }
 
     setPrice(price) {
-        if (typeof price !== 'number' ||
-            !Number.isFinite(price) || price < 0) {
+        if (
+            typeof price !== 'number' ||
+            !Number.isFinite(price) ||
+            price < 0
+        ) {
             throw new Error('Ціна повинна бути невід’ємним числом');
         }
 
@@ -27,10 +31,23 @@ class Product {
 
     setStock(stock) {
         if (!Number.isInteger(stock) || stock < 0) {
-            throw new Error('Кількість товару повинна бути невід’ємним цілим числом');
+            throw new Error(
+                'Кількість товару повинна бути невід’ємним цілим числом'
+            );
         }
 
         this.stock = stock;
+    }
+
+    setImageUrl(imageUrl) {
+        if (
+            imageUrl !== null &&
+            (typeof imageUrl !== 'string' || !imageUrl.trim())
+        ) {
+            throw new Error('Некоректна адреса фотографії');
+        }
+
+        this.imageUrl = imageUrl;
     }
 }
 

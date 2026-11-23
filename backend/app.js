@@ -23,6 +23,12 @@ function createApp({ productService }) {
     // Віддаємо HTML, CSS та JavaScript клієнту
     app.use(express.static(path.join(__dirname, '../frontend/public')));
 
+    // Віддаємо фотографії товарів
+    app.use(
+        '/uploads',
+        express.static(path.join(__dirname, 'uploads'))
+    );
+
     // Перевірка працездатності сервера
    app.get('/health', (req, res) => {
     res.status(200).json({

@@ -582,3 +582,56 @@ img {
     line-height: 1;
     opacity: 0.7;
 }
+
+
+.image-upload {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.image-upload label {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+    padding: 13px 22px;
+    background: var(--gold);
+    color: var(--ink);
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.image-upload label:hover {
+    background: var(--gold-light);
+}
+
+.image-upload input[type="file"] {
+    display: none;
+}
+
+.image-preview {
+    width: 100%;
+    max-width: 320px;
+    min-height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    background: var(--cream);
+    color: var(--muted);
+    text-align: center;
+    padding: 15px;
+}
+
+.image-preview img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    border-radius: 10px;
+}
