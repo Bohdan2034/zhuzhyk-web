@@ -10,7 +10,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DB_PATH: /app/data/items.db
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
     volumes:
       - zhuzhyk-data:/app/data
     restart: unless-stopped
