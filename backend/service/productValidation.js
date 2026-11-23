@@ -2,7 +2,7 @@ const { ValidationError } = require('./errors');
 
 const NAME_MAX = 200;
 const DESCRIPTION_MAX = 2000;
-const FIELDS = ['name', 'description', 'price', 'stock'];
+const FIELDS = ['name', 'description', 'price', 'stock', 'imageUrl'];
 
 function isPlainObject(value) {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -83,6 +83,26 @@ function validateProductInput(dto, { partial }) {
         }
     } else if (!partial) {
         values.stock = 0;
+    }
+
+    // imageUrl
+    if (has('imageUrl')) {
+        if (
+            dto.imageUrl !== null &&
+            (
+                typeof dto.imageUrl !== 'string' ||
+                !dto.imageUrl.startsWith('/uploads/products/')
+            )
+        ) {
+            details.push({
+                field: 'imageUrl',
+                message: 'Некоректна адреса фотографії'
+            });
+        } else {
+            values.imageUrl = dto.imageUrl;
+        }
+    } else if (!partial) {
+        values.imageUrl = null;
     }
 
     if (partial && !FIELDS.some(has)) {

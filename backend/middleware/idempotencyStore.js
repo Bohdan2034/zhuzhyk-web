@@ -7,8 +7,10 @@ class IdempotencyStore {
     }
 
     getHash(data) {
+        const normalizedData = data ?? {};
+
         return createHash('sha256')
-            .update(JSON.stringify(data))
+            .update(JSON.stringify(normalizedData))
             .digest('hex');
     }
 
@@ -46,4 +48,3 @@ class IdempotencyStore {
 }
 
 module.exports = IdempotencyStore;
-

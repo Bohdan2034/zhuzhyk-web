@@ -1,20 +1,27 @@
+
 const Product = require('../domain/Product');
 const { ValidationError, NotFoundError } = require('./errors');
 const { parseId, validateProductInput } = require('./productValidation');
 
-// Рядок з репозиторію -> доменна сутність
 function toDomain(row) {
-    return new Product(row.id, row.name, row.description, row.price, row.stock);
+    return new Product(
+        row.id,
+        row.name,
+        row.description,
+        row.price,
+        row.stock,
+        row.imageUrl ?? null
+    );
 }
 
-// Доменна сутність -> DTO відповіді (контракт openapi.yaml: схема Product)
 function toDto(product) {
     return {
         id: product.id,
         name: product.name,
         description: product.description,
         price: product.price,
-        stock: product.stock
+        stock: product.stock,
+        ...(product.imageUrl ? { imageUrl: product.imageUrl } : {})
     };
 }
 
@@ -23,12 +30,11 @@ function toRow(product) {
         name: product.name,
         description: product.description,
         price: product.price,
-        stock: product.stock
+        stock: product.stock,
+        imageUrl: product.imageUrl
     };
 }
 
-// Use-cases каталогу. Репозиторій передається ззовні (DI), тому сервіс
-// не залежить від SQLite і легко тестується з in-memory реалізацією.
 class ProductService {
     constructor(repository) {
         this.repository = repository;
@@ -50,17 +56,27 @@ class ProductService {
     }
 
     create(dto) {
-        const { values, details } = validateProductInput(dto, { partial: false });
+        const { values, details } = validateProductInput(
+            dto,
+            { partial: false }
+        );
 
         if (details.length > 0) {
             throw new ValidationError(details);
         }
 
         const product = new Product(
-            null, values.name, values.description, values.price, values.stock
+            null,
+            values.name,
+            values.description,
+            values.price,
+            values.stock,
+            values.imageUrl ?? null
         );
 
-        return toDto(toDomain(this.repository.insert(toRow(product))));
+        return toDto(
+            toDomain(this.repository.insert(toRow(product)))
+        );
     }
 
     update(rawId, dto) {
@@ -71,19 +87,22 @@ class ProductService {
             throw new NotFoundError('Product', id);
         }
 
-        const { values, details } = validateProductInput(dto, { partial: true });
+        const { values, details } = validateProductInput(
+            dto,
+            { partial: true }
+        );
 
         if (details.length > 0) {
             throw new ValidationError(details);
         }
 
-        // Зливаємо зміни з поточним станом і перевіряємо інваріанти домену
         const merged = new Product(
             id,
             values.name ?? existing.name,
             values.description ?? existing.description,
             values.price ?? existing.price,
-            values.stock ?? existing.stock
+            values.stock ?? existing.stock,
+            values.imageUrl ?? existing.imageUrl ?? null
         );
 
         const saved = this.repository.update(id, toRow(merged));
