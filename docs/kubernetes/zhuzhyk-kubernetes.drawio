@@ -1,0 +1,86 @@
+<?xml version="1.0" ?>
+<mxfile host="app.diagrams.net" modified="2026-11-23T00:00:00.000Z" agent="ChatGPT" version="24.7.17" type="device">
+  <diagram id="zhuzhyk-k8s" name="Kubernetes Architecture">
+    <mxGraphModel dx="1500" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="ЖУЖИК — теоретична архітектура Kubernetes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#17243b;fontSize=24;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="330" y="20" width="920" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="user" value="User / Client&lt;br&gt;Покупець у браузері" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#4472c4;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="55" y="135" width="205" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="dns" value="DNS&lt;br&gt;shop.example.com (умовно)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#4472c4;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="320" y="135" width="230" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="lb" value="Load Balancer&lt;br&gt;Зовнішній трафік" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#4472c4;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="615" y="135" width="225" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="ing" value="Ingress / Gateway&lt;br&gt;Host: shop.example.com&lt;br&gt;Path: /api → zhuzhyk-api" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="915" y="135" width="290" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="cluster" value="Kubernetes Cluster" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#64748b;fontColor=#17243b;fontSize=21;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="830" y="285" width="680" height="555" as="geometry"/>
+        </mxCell>
+        <mxCell id="namespace" value="Namespace: zhuzhyk-prod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#059669;fontColor=#17243b;fontSize=19;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="855" y="345" width="630" height="465" as="geometry"/>
+        </mxCell>
+        <mxCell id="service" value="Service: zhuzhyk-api&lt;br&gt;Type: ClusterIP&lt;br&gt;Port: 80 → 3000" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#2563eb;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="890" y="415" width="560" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="deployment" value="Deployment: zhuzhyk-api&lt;br&gt;replicas: 2 | image: ghcr.io/dmytroklubuk/zhuzhyk-api:1.0.0 (умовно)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="890" y="545" width="560" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="pod1" value="Pod 1&lt;br&gt;Container: zhuzhyk-api:1.0.0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7ed;strokeColor=#ea580c;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="665" width="255" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="pod2" value="Pod 2&lt;br&gt;Container: zhuzhyk-api:1.0.0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7ed;strokeColor=#ea580c;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="665" width="255" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="git" value="Git repository&lt;br&gt;github.com/dmytroklubuk/zhuzhyk-web" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="360" width="270" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="ci" value="CI/CD: GitHub Actions&lt;br&gt;git push → test → build → push" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#17243b;fontSize=15;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="500" width="270" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="registry" value="Container Registry (GHCR)&lt;br&gt;ghcr.io/dmytroklubuk/zhuzhyk-api:1.0.0&lt;br&gt;(приклад майбутнього образу)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;fontColor=#17243b;fontSize=13;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="650" width="340" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="euserdns" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="user" target="dns">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ednslb" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="dns" target="lb">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="elbing" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="lb" target="ing">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eingservice" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="ing" target="service">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eservicedeployment" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="service" target="deployment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edeploymentpod1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="deployment" target="pod1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edeploymentpod2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="deployment" target="pod2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="egitci" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="git" target="ci">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eciregistry" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#64748b;fontSize=12;fontColor=#334155;" edge="1" parent="1" source="ci" target="registry">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eRegistryDeployment" value="image pull" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#7c3aed;fontSize=12;fontColor=#334155;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="registry" target="deployment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend" value="Потік запитів: Client → DNS → Load Balancer → Ingress → Service → Pods&lt;br&gt;Поставка коду: GitHub → GitHub Actions → GHCR → Deployment / Pods" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;fontColor=#17243b;fontSize=18;align=center;verticalAlign=middle;strokeWidth=2;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="160" y="900" width="1250" height="90" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
